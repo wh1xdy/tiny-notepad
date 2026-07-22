@@ -89,12 +89,42 @@ All three are real, runnable editors with the same core features. `asm/` matches
 the C version feature-for-feature in 254 fewer bytes; `bootpad/` drops the OS
 entirely and saves to disk over BIOS.
 
+## Where this stands vs the "world's smallest" claims
+
+Search for "world's smallest text editor" and you get a pile of numbers that
+aren't measuring the same thing. Byte counts only compare *within the same
+measurement* — source code, a compiled binary, and a browser one-liner are three
+different sports. Lined up honestly:
+
+| editor | claimed size | what that counts | needs to run | self-contained? |
+|---|---|---|---|---|
+| browser `contenteditable` | ~30 B | a URL you type | a whole web browser | no |
+| [wste](https://github.com/maksimKorzh/wste) ("Code Monkey King") | 1148 B | **Python source** | ~30 MB interpreter | no |
+| [Pell](https://github.com/jaredreich/pell) | few KB | JS source | a web browser | no |
+| [kilo](https://github.com/antirez/kilo) | ~1000 LOC | C source | Linux (compiles to tens of KB) | binary: yes |
+| [zepto](https://github.com/hughbarney/zepto) | tens of KB | compiled binary | Linux | yes |
+| **tn (C)** | **1220 B** | the binary | Linux | yes |
+| **tn (asm)** | **966 B** | the binary | Linux | yes |
+| **bootpad** | **512 B** | the entire program | a CPU + BIOS | fully |
+
+The famous "1148-byte" record is *source code* that needs a 30 MB Python runtime;
+the "2-byte" one is a browser doing all the work. (Google's AI overview even
+labels wste as "C with syntax highlighting" — it's neither; it's a Python
+script.) Measured as a **self-contained program you can actually run**, `tn`'s
+966-byte assembly build already undercuts the 1148 figure *as a real binary*, and
+**bootpad** goes lower than anything on the list — 512 bytes with no OS, no
+interpreter, and no browser underneath it.
+
+None of this makes the others "worse" — they optimise for different things (kilo
+for readable C, zepto for real Emacs keybindings, Pell for the web). It just
+means the "record" depends entirely on what you agree to count.
+
 ## How small can you actually go?
 
-- **Hand-written assembly** would shave maybe 200–400 bytes off `tn`'s 1100
-  bytes of code, but most of it is inherent — the read/edit/save loop has to
-  exist. A hand-rolled Linux ELF that overlaps its header with code could reach
-  roughly **700–900 bytes** and still edit.
+- **Hand-written assembly** lands `tn` at **966 bytes** ([`asm/`](asm/)) with full
+  feature parity — see for yourself. About 120 of those bytes are the mandatory
+  ELF + program header; the rest is genuinely the editor. Overlapping the ELF
+  header with code (the classic muppetlabs trick) could reclaim a few dozen more.
 - **The smallest runnable ELF in the world** is Brian Raiter's famous
   [45-byte executable](https://www.muppetlabs.com/~breadbox/software/tiny/teensy.html)
   — but it only calls `exit()`. The floor for an *editor* is its own code.
