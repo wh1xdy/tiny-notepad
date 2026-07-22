@@ -77,6 +77,18 @@ Requires `gcc` (or `cc`), `ld`, `strip`, and `objcopy` from **binutils ≥ 2.41*
 (for `--strip-section-headers`). x86-64 Linux only — the syscall numbers and the
 `_start` stub are architecture-specific.
 
+## Variants in this repo
+
+| variant             | size    | how                                        |
+|---------------------|---------|--------------------------------------------|
+| C (this dir)        | 1220 B  | freestanding C, custom linker script       |
+| [`asm/`](asm/)      | 966 B   | hand-written x86-64 + hand-crafted ELF      |
+| [`bootpad/`](bootpad/) | 512 B | boot sector, bare metal, no OS at all      |
+
+All three are real, runnable editors with the same core features. `asm/` matches
+the C version feature-for-feature in 254 fewer bytes; `bootpad/` drops the OS
+entirely and saves to disk over BIOS.
+
 ## How small can you actually go?
 
 - **Hand-written assembly** would shave maybe 200–400 bytes off `tn`'s 1100
