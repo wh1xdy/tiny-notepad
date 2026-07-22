@@ -47,51 +47,24 @@ static void raw_on(void) {
 static void raw_off(void) { sys(SYS_ioctl, 0, TCSETS, (long)&orig); }
 
 /* ---- tiny helpers ---------------------------------------------------------*/
-static void puts_n(const char *s, long n) { sys(SYS_write, 1, (long)s, n); }
-static long slen(const char *s) {
-	const char *p = s;
-	while (*p) p++;
-	return p - s;
-}
-static void puts_s(const char *s) { puts_n(s, slen(s)); }
-
-/* write a decimal number, no libc */
-static void put_num(unsigned n) {
-	char b[10];
-	int i = 10;
-	b[--i] = 0;
-	if (!n) b[--i] = '0';
-	while (n) {
-		b[--i] = '0' + n % 10;
-		n /= 10;
-	}
-	puts_s(b + i);
-}
+static void out(const char *s, long n) { sys(SYS_write, 1, (long)s, n); }
+#define P(lit) out(lit, sizeof(lit) - 1) /* write a string literal, length known at compile time */
 
 /* ---- editor state ---------------------------------------------------------*/
 static char buf[1 << 20]; /* 1 MiB, lives in .bss - free on disk */
 static long len;          /* bytes used                          */
 static long cur;          /* cursor offset into buf              */
 
-/* Redraw the whole screen and park the hardware cursor where `cur` points. */
+/* Redraw the whole screen and park the hardware cursor where `cur` points.
+ * Trick: writing the text up to `cur` leaves the terminal cursor exactly
+ * there, so we save it (DECSC), draw the tail, and restore it (DECRC) - no
+ * row/column arithmetic, and no line-wrap miscounting. */
 static void draw(void) {
-	puts_s("\x1b[2J\x1b[H"); /* clear + home */
-	puts_n(buf, len);
-	/* derive row/col from the newlines before the cursor */
-	unsigned row = 1, col = 1;
-	for (long i = 0; i < cur; i++) {
-		if (buf[i] == '\n') {
-			row++;
-			col = 1;
-		} else {
-			col++;
-		}
-	}
-	puts_s("\x1b[");
-	put_num(row);
-	puts_s(";");
-	put_num(col);
-	puts_s("H");
+	P("\x1b[2J\x1b[H"); /* clear + home */
+	out(buf, cur);     /* head: leaves the cursor where it belongs */
+	P("\x1b""7");      /* DECSC - save cursor */
+	out(buf + cur, len - cur); /* tail */
+	P("\x1b""8");      /* DECRC - restore cursor */
 }
 
 static void insert(char c) {
@@ -146,7 +119,7 @@ static void save(const char *path) {
 
 static void quit(void) {
 	raw_off();
-	puts_s("\x1b[2J\x1b[H");
+	P("\x1b[2J\x1b[H");
 	sys(SYS_exit, 0, 0, 0);
 }
 

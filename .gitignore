@@ -1,5 +1,4 @@
 tn
-note.txt
-a.txt
-b.txt
+/*.txt
+tn_*
 *.o
