@@ -98,6 +98,13 @@ If you allow a browser, the smallest "notepad" is a ~30-byte URL:
 doing all the work. `tn` is the real thing: its own process, its own raw
 terminal handling, reading and writing real files.
 
+## Going smaller: bootpad
+
+Want a genuinely standalone editor with *no OS underneath*? See
+[`bootpad/`](bootpad/) — a text editor in a **512-byte boot sector** (166 bytes
+of code) that boots on bare metal, edits, and saves to disk via BIOS
+interrupts. That's the real floor for a self-contained editor.
+
 ## Credits
 
 Inspired by Dave Plummer's [TinyRetroPad](https://github.com/PlummersSoftwareLLC/TinyRetroPad)

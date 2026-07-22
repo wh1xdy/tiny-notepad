@@ -2,3 +2,6 @@ tn
 /*.txt
 tn_*
 *.o
+
+bootpad/bootpad.bin
+bootpad/bootpad.img
