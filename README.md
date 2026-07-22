@@ -3,8 +3,12 @@
 A full-screen terminal text editor in **1220 bytes**. No libc, no runtime, no
 dependencies — just freestanding C on top of raw x86-64 Linux syscalls.
 
-Someone built Notepad in 2.5 kB on Windows. This is **52% smaller**, and it's a
-real ELF you can run right now.
+Dave Plummer — the retired Microsoft engineer who wrote the original Windows
+Task Manager — built [**TinyRetroPad**](https://github.com/PlummersSoftwareLLC/TinyRetroPad),
+a 2.5 kB Notepad clone, in x86 assembly. `tn` is **52% smaller**, and it's a
+real ELF you can run right now. (Fair play: his 2.5 kB wraps the Windows
+`RICHEDIT50W` control, so it inherits the whole editor engine — `tn` carries
+its own. Different sports, same spirit.)
 
 ```
 $ make
@@ -73,9 +77,29 @@ Requires `gcc` (or `cc`), `ld`, `strip`, and `objcopy` from **binutils ≥ 2.41*
 (for `--strip-section-headers`). x86-64 Linux only — the syscall numbers and the
 `_start` stub are architecture-specific.
 
+## How small can you actually go?
+
+- **Hand-written assembly** would shave maybe 200–400 bytes off `tn`'s 1100
+  bytes of code, but most of it is inherent — the read/edit/save loop has to
+  exist. A hand-rolled Linux ELF that overlaps its header with code could reach
+  roughly **700–900 bytes** and still edit.
+- **The smallest runnable ELF in the world** is Brian Raiter's famous
+  [45-byte executable](https://www.muppetlabs.com/~breadbox/software/tiny/teensy.html)
+  — but it only calls `exit()`. The floor for an *editor* is its own code.
+- **Change platforms and the header overhead vanishes.** A DOS `.COM` file has
+  a zero-byte header (vs. an ELF's ~120); a **boot-sector editor** fits in ≤512
+  bytes on bare metal via BIOS interrupts, no OS underneath at all. That's about
+  as small as a standalone editor gets.
+
 ## Honourable mention
 
 If you allow a browser, the smallest "notepad" is a ~30-byte URL:
 `data:text/html,<body contenteditable>`. That's cheating — it's the browser
 doing all the work. `tn` is the real thing: its own process, its own raw
 terminal handling, reading and writing real files.
+
+## Credits
+
+Inspired by Dave Plummer's [TinyRetroPad](https://github.com/PlummersSoftwareLLC/TinyRetroPad)
+(2.5 kB, x86 assembly, Windows). Dave is a retired Microsoft engineer — the
+original Task Manager was his — and runs the *Dave's Garage* YouTube channel.
